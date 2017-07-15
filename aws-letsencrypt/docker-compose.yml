@@ -1,0 +1,72 @@
+# replace ohmage.example.com with your domain
+
+# docker create --name mongodata -v /var/ohmage/volumes/mongodata:/data/db busybox
+# docker create --name postgresdata -v /var/ohmage/volumes/postgresdata:/var/lib/postgresql/data busybox
+mongo:
+  restart: always
+  image: mongo:3.4.6
+  volumes_from:
+    - mongodata
+postgres:
+  restart: always
+  image: postgres:9.6.3
+  volumes_from:
+    - postgresdata
+auth:
+  restart: always
+  image: smalldatalab/ohmage-auth-server:2.0
+  links:
+    - postgres
+    - mongo
+  environment:
+    - application.url=https://ohmage.example.com
+    - spring.datasource.url=jdbc:postgresql://postgres:5432/omh
+    - ohmageomh.datasource.url=jdbc:postgresql://postgres:5432/ohmage
+    - spring.data.mongodb.host=mongo
+    - server.port=8082
+    - _JAVA_OPTIONS= -Xms128m -Xmx256m
+  volumes:
+    -  /var/log/ohmage/auth:/var/log/ohmage-auth
+resource:
+  restart: always
+  image: smalldatalab/ohmage-resource-server:2.0.3
+  links:
+    - postgres
+    - mongo
+  environment:
+    - spring.datasource.url=jdbc:postgresql://postgres:5432/omh
+    - ohmageomh.datasource.url=jdbc:postgresql://postgres:5432/ohmage
+    - spring.data.mongodb.host=mongo
+    - server.port=8084
+    - _JAVA_OPTIONS= -Xms128m -Xmx256m
+  volumes:
+    - /var/log/ohmage/resource:/var/log/ohmage-resource
+manage:
+  restart: always
+  image: smalldatalab/ohmage-manage-server:2.0.5
+  links:
+    - mongo
+    - postgres
+  environment:
+    - spring.data.mongodb.host=mongo
+    - spring.data.mongodb.database=omh
+    - spring.datasource.url=jdbc:postgresql://postgres:5432/ohmage
+    - server.port=8080
+    - application.url=https://ohmage.example.com/manage/
+    - logging.path=/var/log/ohmage-manage
+  volumes:
+    - /var/log/ohmage/manage:/var/log/ohmage-manage
+nginx:
+  restart: always
+  image: nginx:1.13
+  links:
+    - auth:ohmage-auth
+    - resource:ohmage-resource
+    - manage:ohmage-manage
+  ports:
+    - "80:80"
+    - "443:443"
+  volumes:
+    - /etc/letsencrypt/live/ohmage.example.com/:/etc/ssl/certs/
+    - /var/log/ohmage/nginx:/var/log/nginx
+    - /var/ohmage/nginx.conf:/etc/nginx/nginx.conf:ro
