@@ -67,6 +67,6 @@ nginx:
     - "80:80"
     - "443:443"
   volumes:
-    - /etc/letsencrypt/live/ohmage.example.com/:/etc/ssl/certs/
+    - /etc/letsencrypt/copy/ohmage.example.com/:/etc/ssl/certs/
     - /var/log/ohmage/nginx:/var/log/nginx
     - /var/ohmage/nginx.conf:/etc/nginx/nginx.conf:ro
