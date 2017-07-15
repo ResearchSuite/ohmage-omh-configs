@@ -67,6 +67,8 @@ nginx:
     - "80:80"
     - "443:443"
   volumes:
+    ## note that this points to a copy of the certs
+    ## see https://stackoverflow.com/questions/37601151/docker-nginx-complains-ssl-error02001002
     - /etc/letsencrypt/copy/ohmage.example.com/:/etc/ssl/certs/
     - /var/log/ohmage/nginx:/var/log/nginx
     - /var/ohmage/nginx.conf:/etc/nginx/nginx.conf:ro
