@@ -20,7 +20,7 @@ auth:
     - postgres
     - mongo
   environment:
-    - application.url=https://ohmage.example.com
+    - application.url=http://ohmage.example.com
     - spring.datasource.url=jdbc:postgresql://postgres:5432/omh
     - ohmageomh.datasource.url=jdbc:postgresql://postgres:5432/ohmage
     - spring.data.mongodb.host=mongo
@@ -53,7 +53,7 @@ manage:
     - spring.data.mongodb.database=omh
     - spring.datasource.url=jdbc:postgresql://postgres:5432/ohmage
     - server.port=8080
-    - application.url=https://ohmage.example.com/manage/
+    - application.url=http://ohmage.example.com/manage/
     - logging.path=/var/log/ohmage-manage
   volumes:
     - /var/log/ohmage/manage:/var/log/ohmage-manage
@@ -66,10 +66,6 @@ nginx:
     - manage:ohmage-manage
   ports:
     - "80:80"
-    - "443:443"
   volumes:
-    ## note that this points to a copy of the certs
-    ## see https://stackoverflow.com/questions/37601151/docker-nginx-complains-ssl-error02001002
-    - /etc/letsencrypt/copy/ohmage.example.com/:/etc/ssl/certs/
     - /var/log/ohmage/nginx:/var/log/nginx
     - /var/ohmage/nginx.conf:/etc/nginx/nginx.conf:ro
